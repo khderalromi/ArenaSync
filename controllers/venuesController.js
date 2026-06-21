@@ -2,9 +2,49 @@ const Venues = require("../models/venues");
 const catchAsync = require("../utils/catchAsync");
 
 
+const multer = require('multer');
+const sharp = require('sharp');
+const AppError = require('../utils/appError'); 
+
+const multerStorage = multer.memoryStorage();
+
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image')) {
+    cb(null, true);
+  } else {
+    cb(new Error('الملف المرفوع ليس صورة! يرجى رفع صور فقط.'), false);
+  }
+};
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter
+});
+
+exports.uploadVenuesPhoto = upload.single('photo');
+
+
+
+exports.resizeVenuesPhoto = async (req, res, next) => {
+  try {
+    if (!req.file) return next();
+
+    req.file.filename = `venues-${req.user ? req.user.id : 'admin'}-${Date.now()}.jpeg`;
+
+    await sharp(req.file.buffer)
+      .resize(500, 500) 
+      .toFormat('jpeg') 
+      .jpeg({ quality: 90 }) 
+      .toFile(`public/img/venueses/${req.file.filename}`); 
+
+    next();
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
 exports.addNew = catchAsync(async (req, res, next) => {
-    
-  // لاحظ أننا نحدد الحقول التي نقبلها لزيادة الأمان
+  
+
   const newStadium = await Venues.create({
     name: req.body.name,
     sportType: req.body.sportType,
@@ -13,6 +53,7 @@ exports.addNew = catchAsync(async (req, res, next) => {
     capacity: req.body.capacity,
     space: req.body.space,
     price_hour: req.body.price_hour,
+    photo: req.file ? req.file.filename : undefined,
     location:req.body.location,
     coverageArea:req.body.coverageArea
   });

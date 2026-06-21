@@ -37,7 +37,11 @@ const venuesSchema = new mongoose.Schema({
       type: Boolean,
       default: true,
       select: false
-   },// موقع الملعب كـ "نقطة" (مثلاً المدخل الرئيسي)
+   },
+   photo: {
+    type: String,
+  },
+  // موقع الملعب كـ "نقطة" (مثلاً المدخل الرئيسي)
     location: {
         type: {
             type: String,

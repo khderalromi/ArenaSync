@@ -12,7 +12,10 @@ router.use(authController.protect);
 */
 router
   .route('/create')
-  .post(authController.restrictTo('Admin', 'owner'), venuesController.addNew);
+  .post(authController.restrictTo('Admin', 'owner'),
+  venuesController.uploadVenuesPhoto,
+   venuesController.resizeVenuesPhoto,
+  venuesController.addNew);
 
 
 router
